@@ -7,6 +7,7 @@ program.
 ### Ames house price prediction 
 This project is to predict the Ames Iowa house price based on housing data. Since there are many categorical variables describing the quality of house features, the major work is focusing on converting them to numbers. I find success in reducing the levels to avoid more
 features and prevent overfitting. Finally a xgboost model is trained using RandomizedSearchCV, which is faster by sampling parameters.
+
 [Find the details here](https://github.com/xgao0412/UIUC-MCS/tree/master/ames_house_price)
 
 ### lendingclub default prediction
