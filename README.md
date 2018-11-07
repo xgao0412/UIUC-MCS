@@ -1,4 +1,4 @@
-# UIUC-MCS
+# University of Illinois, Master of Computer Science program
 
 This repo is a summary of statistical and machine learning projects completed throughout University of Illinois Master of Computer Science
 program. 
