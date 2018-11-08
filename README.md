@@ -3,7 +3,7 @@
 This repo is a summary of statistical and machine learning projects completed throughout University of Illinois Master of Computer Science
 program. 
 
-## Practical Statistic learning
+## Course: Practical Statistic learning
 #### This course explains svm, logistic regression and other modeling concepts based on the book The Elements of Statistical Learning
 ### Ames house price prediction 
 This project is to predict the Ames Iowa house price based on housing data. Since there are many categorical variables describing the quality of house features, the major work is focusing on converting them to numbers. I find success in reducing the levels to avoid more
@@ -23,3 +23,10 @@ One important thing to note here is both xgboost and lightgbm are based on decis
 The goal of this project is to build a model that can forecast on a two month basis. In the begining, only 1 year data is provided. Then when the new data comes in, the model will combine the new data and forecast the next two months sales. This project is done by R.The tslm is used to fit linear models to time series including trend and seasonality components. When I have 2 years data, stlf is used to forcast on seasonal adjusted data and add back the seasonal components.
 
 [Find the details here](https://github.com/xgao0412/UIUC-MCS/tree/master/walmart_sales)
+
+## Course: data visualization
+#### This course explains D3, javascript, html techniques. I end up building an interactive visualization website to help users select wines.
+
+[Find the details here](https://github.com/xgao0412/Wine_selection)
+
+we
