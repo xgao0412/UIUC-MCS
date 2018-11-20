@@ -19,10 +19,14 @@ is applied by summarizing statistics and visualizing features against loan statu
 
 One important thing to note here is both xgboost and lightgbm are based on decision trees. xgboost splits trees level wise or depth wise, this leads to increase complexity and may lead to overfitting. While Lightgbm splits trees leaf wise and can reduce more loss and achieve better result.
 
-### project3 : Walmart sales forecast
+### project3 : Walmart sales forecast (R)
 The goal of this project is to build a model that can forecast on a two month basis. In the begining, only 1 year data is provided. Then when the new data comes in, the model will combine the new data and forecast the next two months sales. This project is done by R.The tslm is used to fit linear models to time series including trend and seasonality components. When I have 2 years data, stlf is used to forcast on seasonal adjusted data and add back the seasonal components.
 
 [Find the details here](https://github.com/xgao0412/UIUC-MCS/tree/master/walmart_sales)
+
+### project4 : Movie review sentiment classifier (R)
+The goal of this project is to build a model that takes movie review as input and predict sentiment of the text content. I used fread function to get rid of the exceptions when dealing with tsv file. Then I used regular expression to remove punctuations and numbers
+A dictionary is built using text2vec package, a word and bigram vector and docment term matrix are created. Apply two sample t-test to two sentiment groups. The feature with higher t-statistics will be selected. High magnitude of t-statistics means for certain feature, the mean of positive sentiment group is close to negative group, thus we can acquire features with more predictive power. Finally, I use 10 folds cross validated of ridge regression to find the lambda value that produces the minimum value of auc. Then a ridge regression model is built based on that. This model achieves above 0.96 in prediction accuracy.
 
 ## Course: data visualization
 #### This course explains D3, javascript, html techniques. I end up building an interactive visualization website to help users select wines.
