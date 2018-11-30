@@ -21,6 +21,7 @@ One important thing to note here is both xgboost and lightgbm are based on decis
 
 ### project3 : Walmart sales forecast (R)
 The goal of this project is to build a model that can forecast on a two month basis. In the begining, only 1 year data is provided. Then when the new data comes in, the model will combine the new data and forecast the next two months sales. This project is done by R.The tslm is used to fit linear models to time series including trend and seasonality components. When I have 2 years data, stlf is used to forcast on seasonal adjusted data and add back the seasonal components.
+label: online learning
 
 [Find the details here](https://github.com/xgao0412/UIUC-MCS/tree/master/walmart_sales)
 
