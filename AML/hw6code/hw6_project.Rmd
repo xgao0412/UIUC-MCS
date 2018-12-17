@@ -1,0 +1,384 @@
+---
+title: "HW6"
+author: "Xiang Gao"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+1.
+
+A. build a straightforward regression
+
+```{r echo=F}
+set.seed(1)
+data <- read.table('default_plus_chromatic_features_1059_tracks.txt',header = F,sep = ',')
+colnames(data)[ncol(data)-1] <- 'latitude'
+colnames(data)[ncol(data)] <- 'longitude'
+
+data_lat <- subset(data,select = -c(longitude))
+lat <- lm(latitude~., data = data_lat)
+
+data_lon <- subset(data,select = -c(latitude))
+lon <- lm(longitude~., data = data_lon)
+
+```
+
+latitude model r squared
+
+```{r echo=F}
+summary(lat)$r.squared
+```
+
+longitude model r squared
+
+```{r echo=F}
+summary(lon)$r.squared
+```
+
+latitude model residual plot
+
+```{r echo=F}
+plot(lat,1)
+```
+
+longitude model residual plot
+
+```{r echo=F}
+plot(lon,1)
+```
+
+From the residual plot, the longitude model is more scattered and the r squared proved that it has better fit.
+
+B. boxcox transformation for latitude model
+
+```{r echo=F,message=F,warning=F}
+library(MASS)
+library(lattice)
+library(ggplot2)
+df <- data
+df$latitude <- df$latitude+max(abs(data$latitude))
+df$longitude <- df$longitude+max(abs(data$longitude))
+
+```
+
+```{r echo=F}
+boxcox(latitude~.-longitude, data=df, lambda = seq(-2,5))
+```
+
+This suggest lambda equals 2.6. I will fit the model again with this transformation.
+Thus we get the residual plot and r squared as follows.
+
+```{r echo=F}
+lat_bc <- lm(((latitude^2.6-1)/2.6)~.-longitude, data = df)
+plot(lat_bc,1)
+```
+
+r-squared value
+
+```{r echo=F}
+summary(lat_bc)$r.squared
+```
+
+Boxcox transformation for latitude model shows more scatter than straightfoward regression. So it helps improve latitude model. By checking the r squared also proves my conclusion.
+
+Boxcox for longitude model
+
+```{r echo=F}
+boxcox(longitude~.-latitude, data=df, lambda = seq(-2,5))
+```
+
+This suggest lambda equals to 1 which is not a transformation. It would not make the model fit better. The errors will remain the same.
+So it doesn't imporve the regressions for longitude model.
+
+
+C
+Apply box-cox transformation for latitude model, longitude model will still use original data.
+
+I.L2 ridge regression for latitude model
+
+```{r message=F,warning=F,echo=F}
+library(glmnet)
+X <- as.matrix(data_lat[,-which(colnames(data_lat)=='latitude')]) 
+y_lat <- as.vector(((df$latitude)^2.6-1)/2.6)
+y_lon <- as.vector(df$longitude)
+ridge_lat <- cv.glmnet(X,y_lat,alpha=0)
+plot(ridge_lat)
+```
+
+I.L2 ridge regression for longitude model
+
+```{r message=F,warning=F,echo=F}
+ridge_lon <- cv.glmnet(X,y_lon,alpha=0)
+plot(ridge_lon)
+```
+
+lambda that produces the minimun error for latitude and longitude model
+
+```{r echo=F}
+ridge_lat$lambda.min
+ridge_lon$lambda.min
+```
+
+cv error (lat and lon)
+```{r echo=F}
+min(ridge_lat$cvm)
+min(ridge_lon$cvm)
+```
+
+Number of parameters for ridge regression are 116, since ridge never attain zero values
+
+For each plot, imagin on the far left where all variables are used and the lambda closes to zero, can be regarded as unregularized. So the error of the unregularized model is closes to the left red dot of the plot.
+
+The left vertical line is where the lambda with the minimum deviance, I choose this value and check the error,it is lower than the unregularized model(the very left red dot). 
+
+This means if I choose this lambda to do regularization, the training error is lower. So it help improving the model.
+
+II.L1 lasso regression for latitude
+
+```{r message=F,warning=F,echo=F}
+
+lasso_lat <- cv.glmnet(X,y_lat,alpha=1)
+plot(lasso_lat)
+```
+
+II.L1 lasso regression for longitude
+
+```{r message=F,warning=F,echo=F}
+
+lasso_lon <- cv.glmnet(X,y_lon,alpha=1)
+plot(lasso_lon)
+```
+
+
+lambda that produces the minimun error (latitude and longitude)
+
+```{r echo=F}
+lasso_lat$lambda.min
+lasso_lon$lambda.min
+```
+
+cv error (lat and lon)
+```{r echo=F}
+min(lasso_lat$cvm)
+min(lasso_lon$cvm)
+```
+
+
+
+The number of variables is 62 and 56. The theory is the same as part I
+
+I saw the left vertical line has lower error than the very left dot. This means regularization help improve the training error. So doing so is better.
+
+III
+I will use alpha= 0.2, 0.5, 0.8 to test
+for both models, when alpha =0.2 ,below shows latitude regression
+
+```{r echo=F}
+lat_en.2 <- cv.glmnet(X,y_lat,alpha=0.2)
+plot(lat_en.2)
+```
+
+longitutde model at alpha =0.2
+
+```{r echo=F}
+lon_en.2 <- cv.glmnet(X,y_lon,alpha=0.2)
+plot(lon_en.2)
+```
+
+cv error (lat and lon elastic net 0.2)
+```{r echo=F}
+min(lat_en.2$cvm)
+min(lon_en.2$cvm)
+```
+
+alpha =0.5 of latitude model
+
+```{r echo=F}
+lat_en.5 <- cv.glmnet(X,y_lat,alpha=0.5)
+plot(lat_en.5)
+
+```
+
+
+longitude model at alpha=0.5
+
+```{r echo=F}
+lon_en.5 <- cv.glmnet(X,y_lon,alpha=0.5)
+plot(lon_en.5)
+
+```
+
+cv error (lat and lon elastic net 0.5)
+```{r echo=F}
+min(lat_en.5$cvm)
+min(lon_en.5$cvm)
+```
+
+latitdue model at alpha =0.8
+
+```{r echo=F}
+lat_en.8 <- cv.glmnet(X,y_lat,alpha=0.8)
+plot(lat_en.8)
+```
+
+
+longitude model at alpha =0.8
+
+```{r echo=F}
+lon_en.8 <- cv.glmnet(X,y_lon,alpha=0.8)
+plot(lon_en.8)
+```
+
+cv error (lat and lon elastic net 0.8)
+```{r echo=F}
+min(lat_en.8$cvm)
+min(lon_en.8$cvm)
+```
+
+lambda for 0.2,0.5 and 0.8 elastic net variables for latitude and longitude model
+
+```{r echo=F}
+lambda_lat <- c(lat_en.2$lambda.min,lat_en.5$lambda.min,lat_en.8$lambda.min)
+lambda_lat
+```
+
+```{r echo=F}
+lambda_lon <- c(lon_en.2$lambda.min,lon_en.5$lambda.min,lon_en.8$lambda.min)
+lambda_lon
+```
+
+
+
+number of variables that are used for latitude and lonigtude
+
+```{r echo=F}
+nv_lat <- c(85,37,81)
+nv_lat
+```
+```{r echo=F}
+nv_lon <- c(94,88,81)
+nv_lon
+```
+
+Theories are the same as part I and II. The error at the left line tends to be lower than the very left red dot. So doing regularization is better.
+
+
+Problem 2
+
+```{r message=F,warning=F,echo=F}
+library(readxl)
+credit <- read_excel('default of credit card clients.xls',col_names = TRUE,skip=1)
+```
+```{r echo=F}
+colnames(credit)[ncol(credit)] <- 'y'
+#credit$y <- as.factor(credit$y)
+```
+```{r echo=F}
+
+X_c <- as.matrix(credit[,-c(ncol(credit))])
+y_c <- as.factor(credit$y)
+```
+```{r,echo=F,message=F,warning=F}
+library(caret)
+index <- createDataPartition(y=y_c,p=.8,list = F)
+train_x <- X_c[index,]
+train_y <- y_c[index]
+test_x <- X_c[-index,]
+test_y <- y_c[-index]
+```
+
+Split the data by 80% training set and test it on the 20% hold-out set,then apply ridge,lasso and elastic net(0.2,0.5,0.8) regularization on training set. Use lambda.min to predict the hold-out set and produce the arrucracy.
+
+```{r echo=F}
+mod_r <- cv.glmnet(train_x,train_y,family='binomial',alpha=0)
+pred_rm <- predict(mod_r,test_x,type='class',s='lambda.min')
+acc_rm <- (sum(pred_rm==test_y))/(nrow(credit)-nrow(train_x))
+
+
+```
+
+
+```{r echo=F}
+mod_l <- cv.glmnet(train_x,train_y,family='binomial',alpha=1)
+pred_l <- predict(mod_l,test_x,type='class',s='lambda.min')
+acc_l <- (sum(pred_l==test_y))/(nrow(credit)-nrow(train_x))
+
+```
+
+  
+
+```{r echo=F}
+
+mod_e2 <- cv.glmnet(train_x,train_y,family='binomial',alpha=0.2)
+pred_e2 <- predict(mod_e2,test_x,type='class',s='lambda.min')
+acc_e2 <- (sum(pred_e2==test_y))/(nrow(credit)-nrow(train_x))
+
+```
+
+```{r echo=F}
+
+mod_e5 <- cv.glmnet(train_x,train_y,family='binomial',alpha=0.5)
+pred_e5 <- predict(mod_e5,test_x,type='class',s='lambda.min')
+acc_e5 <- (sum(pred_e5==test_y))/(nrow(credit)-nrow(train_x))
+
+```
+
+```{r echo=F}
+
+mod_e8 <- cv.glmnet(train_x,train_y,family='binomial',alpha=0.8)
+pred_e8 <- predict(mod_e8,test_x,type='class',s='lambda.min')
+acc_e8 <- (sum(pred_e8==test_y))/(nrow(credit)-nrow(train_x))
+
+```
+
+```{r echo=F,warning=F,message=F}
+mod_lr <- glm(y~., family = binomial(link = 'logit'),data = credit[index,])
+pred_lr <- predict(mod_lr,data.frame(test_x),type='response')
+pred_lr <- ifelse(pred_lr>0.5,1,0)
+acc_lr <- (sum(pred_lr==test_y))/(nrow(credit)-nrow(train_x))
+
+```
+
+accuracy rate for ridge,lasso, elastic net(0.2,0.5,0.8),unregularized logistic regression
+```{r echo=F}
+c <- c(acc_rm,acc_l,acc_e2,acc_e5,acc_e8,acc_lr)
+c
+```
+
+
+number of parameters for ridge,lasso,elastic net and unregularized logistic regression
+```{r echo=F}
+a1 <- mod_r$glmnet.fit$df[mod_r$glmnet.fit$lambda==mod_r$lambda.min]
+a2 <-mod_l$glmnet.fit$df[mod_l$glmnet.fit$lambda==mod_l$lambda.min]
+a3 <-mod_e2$glmnet.fit$df[mod_e2$glmnet.fit$lambda==mod_e2$lambda.min]
+a4 <-mod_e5$glmnet.fit$df[mod_e5$glmnet.fit$lambda==mod_e5$lambda.min]
+a5 <-mod_e8$glmnet.fit$df[mod_e8$glmnet.fit$lambda==mod_e8$lambda.min]
+a6 <-length(mod_lr$coefficients)
+a <- c(a1,a2,a3,a4,a5,a6)
+a
+```
+
+optimal coefficient lambda.min value for ridge,lasso,elastic net
+```{r echo=F}
+b1 <- mod_r$lambda.min
+b2 <-mod_l$lambda.min
+b3 <-mod_e2$lambda.min
+b4 <-mod_e5$lambda.min
+b5 <-mod_e8$lambda.min
+b <- c(b1,b2,b3,b4,b5)
+b
+```
+
+We can see the the optimal coefficients are very small. These coefficients are picked by the minimum binomial deviance. Using these coefficients on test data will produce the accuracy that is comparabale. By checking this accuracy, we can see unregularized and elastic net(alpha=0.5) give the same best accuracy. So they are the models that are chosen.
+
+
+
+
+
+
+
+
+
+

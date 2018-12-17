@@ -1,0 +1,292 @@
+---
+output:
+  html_document: default
+  pdf_document: default
+---
+
+
+7.9
+(a) data points and regression line in log-log coordinate
+
+```{r echo=F,message=F,warning=F}
+library(glmnet)
+data <- read.table('brunhild.txt',header = T,sep='\t')
+x <- as.matrix(data$Hours)
+log_x <- log(x)
+y <- as.matrix(data$Sulfate)
+log_y <- log(y)
+model <- lm(log_y~log_x)
+plot(log_y~log_x)
+abline(model)
+```
+
+R squared value
+```{r echo=F}
+summary(model)$r.squared
+```
+
+
+
+(b) data points and regression line in original coordinate
+
+```{r,echo=F}
+
+plot(y~x)
+pred_y <- exp(fitted.values(model))
+lines(x,pred_y)
+```
+
+
+
+
+(c) plot residual against fitted values in log-log coordinates
+
+```{r, echo=F}
+plot(model,1)
+```
+
+(c) plot residual against fitted values in original coordinates
+
+```{r,echo=F}
+residual <- y-pred_y
+plot(pred_y,residual)
+```
+
+(d)
+It's a good regression as the residual is random and the line (curves) fits the data(R squared should be high even though we are not supposed to measure it). 
+
+7.10
+(a) plot the residual against the fitted values
+
+```{r,echo=F,warning=F,message=F}
+df <- read.table('physical.txt',header = T)
+
+mass_model <- lm(Mass~.,data = df)
+plot(mass_model,1)
+
+```
+R squared
+
+```{r echo=F}
+summary(mass_model)$r.squared
+```
+
+
+
+
+(b) build model on cube root of mass
+
+```{r,echo=F}
+#df[,1]=df[,1]^(1/3)
+```
+
+```{r echo=F}
+cube_model <- lm(Mass^(1/3)~.,data = df)
+plot(cube_model,1)
+```
+
+r squared
+```{r echo=F}
+summary(cube_model)$r.squared
+```
+
+
+
+residual vs fitted value on the original coordinated
+
+```{r echo=F}
+pred_y1 <- (fitted.values(cube_model))^(3) 
+residual_y1 <- df[,1]-pred_y1
+plot(pred_y1,residual_y1)
+```
+
+
+
+(c) By eyeballing the residual plots c and a, they tend to be very similar; by checking R square values, original model is slightly higher than cubic model.
+To answer the question " use your plots to explain which regression is better", I would say both are good because they have random residual plot and the sparsity is the same. But essentially if comparing the R squared, original model is better.
+
+7.11
+(a) residual against fitted values(gender excluded)
+
+```{r,echo=F}
+dt <- read.table('abalone.txt',sep = ',')
+colnames(dt) <- c('sex','length','diameter','height','whole weight','shucked weight','viscera weight','shell weight','rings')
+
+```
+
+```{r,echo=F}
+
+dt_no <- dt
+model_a <- lm(rings~.-sex,data = dt_no)
+plot(model_a,1)
+
+```
+
+r squared
+
+```{r echo=F}
+summary(model_a)$r.squared
+```
+
+(b)
+residual against fitted values(gender included)
+
+```{r,echo=F}
+dt_b <- dt
+dt_b[which(dt_b$sex=='M'),'gender'] <- 1
+dt_b[which(dt_b$sex=='F'),'gender'] <- -1
+dt_b[which(dt_b$sex=='I'),'gender'] <- 0
+
+#dt_b$gender <- as.factor(dt_b$gender)
+        
+dt_b <- subset(dt_b,select = -c(sex))
+
+dt_b_no <- dt_b
+model_b <- lm(rings~.,data = dt_b_no)
+plot(model_b,1)
+```
+
+r squared
+
+```{r echo=F}
+summary(model_b)$r.squared
+```
+
+
+(c)
+plot residual against the fitted values for predicting log age model(sex excluded) in the original coordinate.
+
+```{r,echo=F}
+dt_c <- dt
+dt_c$rings <- log(dt_c$rings)
+dt_c_no <- dt_c
+model_c <- lm(rings~.-sex,data = dt_c_no)
+
+pred_y2 <- exp(fitted.values(model_c))
+residual_y2 <- dt$rings-pred_y2
+plot(pred_y2,residual_y2)
+```
+
+r squared
+
+```{r echo=F}
+summary(model_c)$r.squared
+```
+
+
+(d) 
+plot residual against the fitted values for predicting log age model(sex included) in the original space
+
+```{r echo=F}
+dt_d <- dt_b
+dt_d$rings <- log(dt_d$rings)
+dt_d_no <- dt_d
+model_d <- lm(rings~., data = dt_d_no)
+pred_y3 <- exp(fitted.values(model_d))
+residual_y3 <- dt_b$rings-pred_y3
+plot(pred_y3,residual_y3)
+
+```
+
+r squared
+
+```{r echo=F}
+summary(model_d)$r.squared
+```
+
+(e)
+By eyeballing the residual plot, a and b are similar, c and d are similar,
+c and d tend to be more sparsed than a and b, the residuals are more random, so c and d are better.
+I will choose model c (log age without gender) because comparing to a and b, c model is better fitted; Comparing to d, they are equally well fitted (residual plot is very similar), but using c will make this process (determin the age) easier, because you don't have to physically check the gender and get the data (gender is not considered in this model). 
+I also check r squared, c,d are equal while a,b are equal but lower. This also proves my conclusion.
+
+
+(f)
+I didn't specify alpha runing regularizer. 
+cross-validated error for regularized model a
+
+```{r echo=F,message=F,warning=F}
+library(glmnet)
+Xa <- as.matrix(dt[,-c(1,9)])
+ya <- as.matrix(dt[,9])
+model_ar <- cv.glmnet(Xa,ya)
+plot(model_ar)
+
+```
+
+deviance percentage. when using elastic net,this value equals to r squared
+```{r echo=F}
+model_ar$glmnet.fit$dev.ratio[which(model_ar$glmnet.fit$lambda==model_ar$lambda.min)]
+```
+
+
+cross-validated error for regularized model b
+
+```{r echo=F}
+Xb <- as.matrix(dt_b[,-c(8)])
+yb <- as.matrix(dt_b[,8])
+model_br <- cv.glmnet(Xb,yb)
+plot(model_br)
+```
+
+deviance percentage. when using elastic net,this value equals to r squared
+```{r echo=F}
+model_br$glmnet.fit$dev.ratio[which(model_br$glmnet.fit$lambda==model_br$lambda.min)]
+```
+
+
+cross-validated error for regularized model c
+
+```{r echo=F}
+Xc <- as.matrix(dt_c[,-c(1,9)])
+yc <- as.matrix(dt_c[,9])
+model_cr <- cv.glmnet(Xc,yc)
+plot(model_cr)
+```
+
+deviance percentage. when using elastic net,this value equals to r squared
+```{r echo=F}
+model_cr$glmnet.fit$dev.ratio[which(model_cr$glmnet.fit$lambda==model_cr$lambda.min)]
+```
+
+cross-validated error for regularized model d
+
+```{r echo=F}
+Xd <- as.matrix(dt_d[,-c(8)])
+yd <- as.matrix(dt_d[,8])
+model_dr <- cv.glmnet(Xd,yd)
+plot(model_dr)
+```
+
+deviance percentage. when using elastic net,this value equals to r squared
+```{r echo=F}
+model_dr$glmnet.fit$dev.ratio[which(model_dr$glmnet.fit$lambda==model_dr$lambda.min)]
+```
+
+For each plot, imagine on the far left where all variables are used and the lambda closes to zero, can be treated as unregularized. So the error of the unregularized model is closes to the left red dot of the plot.
+
+the left vertical line is where the lambda with the minimum deviance, I choose this value and check the error,it is almost the same as the unregularized model(the very left red dot). 
+
+This means if I choose this lambda to do regularization, the training error is the same. So it doesn't help improving the model. But it may generate better results on test data.
+
+By checking the r squared, for each model, it tends to be the same after applying regularization. This proves my conclusion that a regularizer didn't help these regressions as it didn't help improve r squared
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
