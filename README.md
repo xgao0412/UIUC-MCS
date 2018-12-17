@@ -4,7 +4,7 @@ This repo is a summary of statistical and machine learning projects completed th
 program. 
 
 ## Course: Practical Statistic learning
-#### This course explains svm, logistic regression and other modeling concepts based on the book The Elements of Statistical Learning
+#### This course explains linear regression, regularization, tree models,Nonlinear regression, clustering, SVM, classification tree and boosting, Large scale machine learning using SGD, online algorithm, deep learning, recommendation systems based on the book The Elements of Statistical Learning
 ### project1 Ames house price prediction 
 This project is to predict the Ames Iowa house price based on housing data. Since there are many categorical variables describing the quality of house features, the major work is focusing on converting them to numbers. I find success in reducing the levels to avoid more
 features and prevent overfitting. Finally a xgboost model is trained using RandomizedSearchCV, which is faster by sampling parameters.
@@ -44,3 +44,6 @@ A dictionary is built using text2vec package, a word and bigram vector and docme
 This project is to build a model to detect potential fake reviews in tripadvisor. 
 
 [Find the details here](https://github.com/xgao0412/Fake_review_detection)
+
+## Course: Advanced Machine learning
+#### This course is a pre-requisite course of practical statistic learning. It explains linear regression, svd,pca,mds,logistic regression, svm, neural network.
