@@ -47,3 +47,4 @@ This project is to build a model to detect potential fake reviews in tripadvisor
 
 ## Course: Advanced Machine learning
 #### This course is a pre-requisite course of practical statistic learning. It explains linear regression, svd,pca,mds,logistic regression, svm, neural network.
+[Find the details here](https://github.com/xgao0412/UIUC-MCS/tree/master/AML)
